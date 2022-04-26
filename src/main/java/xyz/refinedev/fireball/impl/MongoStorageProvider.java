@@ -8,6 +8,8 @@ import com.mongodb.client.model.UpdateOptions;
 import org.bson.Document;
 import xyz.refinedev.fireball.IStorageProvider;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,6 +36,21 @@ public class MongoStorageProvider<K, V> implements IStorageProvider<K, V> {
     @Override
     public V getValueFromCache(K key) {
         return map.getOrDefault(key, null);
+    }
+
+    @Override
+    public CompletableFuture<List<V>> getAllEntries() {
+        return CompletableFuture.supplyAsync(() -> {
+            List<V> found = new ArrayList<>();
+            for (Document document : this.collection.find()) {
+                if (document == null) {
+                    continue;
+                }
+                found.add(this.gson.fromJson(document.toJson(), new TypeToken<V>() {
+                }.getType()));
+            }
+            return found;
+        });
     }
 
     @Override

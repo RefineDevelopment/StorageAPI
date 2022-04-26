@@ -11,18 +11,21 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
 
-public class JsonStorageProvider<K,V> implements IStorageProvider<K,V> {
+public class JsonStorageProvider<K, V> implements IStorageProvider<K, V> {
 
     private final File file;
 
     private final Gson gson;
 
-    protected final Map<K,V> map = new ConcurrentHashMap<>();
+    protected final Map<K, V> map = new ConcurrentHashMap<>();
 
     public JsonStorageProvider(String name, String directory) {
 
@@ -44,6 +47,24 @@ public class JsonStorageProvider<K,V> implements IStorageProvider<K,V> {
     }
 
     @Override
+    public CompletableFuture<List<V>> getAllEntries() {
+        return CompletableFuture.supplyAsync(() -> {
+            try (FileReader fileReader = new FileReader(this.file)) {
+                List<V> found = this.gson.fromJson(fileReader, new TypeToken<List<V>>(){}.getType());
+
+                if (found == null || found.isEmpty()) {
+                    return Collections.emptyList();
+                }
+
+                return found;
+            } catch (IOException exception) {
+                exception.printStackTrace();
+            }
+            return null;
+        });
+    }
+
+    @Override
     public V getValueFromDataStore(K key) {
         try (FileReader reader = new FileReader(this.file)) {
             JsonArray jsonArray = this.gson.fromJson(reader, JsonArray.class);
@@ -55,7 +76,8 @@ public class JsonStorageProvider<K,V> implements IStorageProvider<K,V> {
                 JsonObject object = jsonElement.getAsJsonObject();
 
                 if (object.get("_id").getAsString().equalsIgnoreCase(String.valueOf(key))) {
-                    V val = gson.fromJson(object,new TypeToken<V>(){}.getType());
+                    V val = gson.fromJson(object, new TypeToken<V>() {
+                    }.getType());
                     this.map.put(key, val);
                     return val;
                 }

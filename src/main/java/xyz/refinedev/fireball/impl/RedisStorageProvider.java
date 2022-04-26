@@ -6,6 +6,8 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import xyz.refinedev.fireball.IStorageProvider;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,8 +22,11 @@ public class RedisStorageProvider<K,V> implements IStorageProvider<K,V> {
 
     private final Gson gson = new Gson();
 
-    public RedisStorageProvider(String host, int port, String password) {
+    private final String keyPrefix;
+
+    public RedisStorageProvider(String host, int port, String password, String keyPrefix) {
         this.password = password;
+        this.keyPrefix = keyPrefix;
         this.jedisPool = new JedisPool(host, port);
     }
 
@@ -36,11 +41,28 @@ public class RedisStorageProvider<K,V> implements IStorageProvider<K,V> {
             if (!password.isEmpty()) {
                 jedis.auth(password);
             }
-            return gson.fromJson(jedis.get(String.valueOf(key)), new TypeToken<V>(){}.getType());
+            return gson.fromJson(jedis.get(keyPrefix + "_" + key), new TypeToken<V>(){}.getType());
         } catch (Exception exception) {
             exception.printStackTrace();
         }
         return null;
+    }
+
+    @Override
+    public CompletableFuture<List<V>> getAllEntries() {
+        return CompletableFuture.supplyAsync(() -> {
+            List<V> found = new ArrayList<>();
+            try (Jedis jedis = this.jedisPool.getResource()) {
+                if (!password.isEmpty()) {
+                    jedis.auth(password);
+                }
+
+                for (String key : jedis.keys(keyPrefix + "_*")) {
+                    found.add(this.gson.fromJson(jedis.get(key), new TypeToken<V>(){}.getType()));
+                }
+            }
+            return found;
+        });
     }
 
     @Override
@@ -55,7 +77,7 @@ public class RedisStorageProvider<K,V> implements IStorageProvider<K,V> {
                 jedis.auth(password);
             }
 
-            jedis.set(String.valueOf(key), gson.toJson(value));
+            jedis.set(keyPrefix + "_" + key, gson.toJson(value));
         }
     }
 }

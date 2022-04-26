@@ -1,5 +1,6 @@
 package xyz.refinedev.fireball;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public interface IStorageProvider<K,V> {
@@ -9,6 +10,8 @@ public interface IStorageProvider<K,V> {
     V getValueFromDataStore(K key);
 
     CompletableFuture<V> getValueFromDataStoreAsync(K key);
+
+    CompletableFuture<List<V>> getAllEntries();
 
     void saveData(K key, V value);
 
