@@ -123,6 +123,10 @@ public class JsonStorageProvider<K, V> implements IStorageProvider<K, V> {
         this.gson = gson;
     }
 
+    public File getFile() {
+        return file;
+    }
+
     public void saveData(V value) {
         this.saveData(null, value);
     }

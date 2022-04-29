@@ -54,6 +54,7 @@ public interface IStorageProvider<K,V> {
      */
     void setGSON(Gson gson);
 
+
     /**
      * Custom load method
      */
