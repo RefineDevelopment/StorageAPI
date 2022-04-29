@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RedisStorageProvider<K,V> implements IStorageProvider<K,V> {
 
     protected final Map<K,V> map = new ConcurrentHashMap<>();
-    private final Gson gson = new Gson();
+    private Gson gson;
     private final JedisPool jedisPool;
 
     private final String password, keyPrefix;
@@ -23,6 +23,7 @@ public class RedisStorageProvider<K,V> implements IStorageProvider<K,V> {
     public RedisStorageProvider(String host, int port, String password, String keyPrefix) {
         this.password = password;
         this.keyPrefix = keyPrefix;
+        this.gson = new Gson();
         this.jedisPool = new JedisPool(host, port);
     }
 
@@ -49,9 +50,7 @@ public class RedisStorageProvider<K,V> implements IStorageProvider<K,V> {
         return CompletableFuture.supplyAsync(() -> {
             List<V> found = new ArrayList<>();
             try (Jedis jedis = this.jedisPool.getResource()) {
-                if (!password.isEmpty()) {
-                    jedis.auth(password);
-                }
+                if (!password.isEmpty()) jedis.auth(password);
 
                 for (String key : jedis.keys(keyPrefix + "_*")) {
                     found.add(this.gson.fromJson(jedis.get(key), new TypeToken<V>(){}.getType()));
@@ -69,11 +68,14 @@ public class RedisStorageProvider<K,V> implements IStorageProvider<K,V> {
     @Override
     public void saveData(K key, V value) {
         try (Jedis jedis = jedisPool.getResource()) {
-            if (!password.isEmpty()) {
-                jedis.auth(password);
-            }
+            if (!password.isEmpty()) jedis.auth(password);
 
             jedis.set(keyPrefix + "_" + key, gson.toJson(value));
         }
+    }
+
+    @Override
+    public void setGSON(Gson gson) {
+        this.gson = gson;
     }
 }

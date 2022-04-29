@@ -19,7 +19,7 @@ public class MongoStorageProvider<K, V> implements IStorageProvider<K, V> {
 
     protected final Map<K, V> map = new ConcurrentHashMap<>();
     private final MongoCollection<Document> collection;
-    private final Gson gson;
+    private Gson gson;
 
     /**
      * Constructs a new {@link MongoStorageProvider} instance
@@ -80,5 +80,10 @@ public class MongoStorageProvider<K, V> implements IStorageProvider<K, V> {
     public void saveData(K key, V value) {
         ForkJoinPool.commonPool()
                 .execute(() -> this.collection.replaceOne(Filters.eq("_id", String.valueOf(key)), Document.parse(gson.toJson(value)), new UpdateOptions().upsert(true)));
+    }
+
+    @Override
+    public void setGSON(Gson gson) {
+        this.gson = gson;
     }
 }

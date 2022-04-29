@@ -22,7 +22,7 @@ public class JsonStorageProvider<K, V> implements IStorageProvider<K, V> {
 
     protected final Map<K, V> map = new ConcurrentHashMap<>();
     private final File file;
-    private final Gson gson;
+    private Gson gson;
 
     public JsonStorageProvider(String name, String directory) {
         this.file = new File(directory, name + ".json");
@@ -107,6 +107,11 @@ public class JsonStorageProvider<K, V> implements IStorageProvider<K, V> {
                 exception.printStackTrace();
             }
         });
+    }
+
+    @Override
+    public void setGSON(Gson gson) {
+        this.gson = gson;
     }
 
     public void saveData(V value) {

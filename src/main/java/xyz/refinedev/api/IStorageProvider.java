@@ -1,5 +1,7 @@
 package xyz.refinedev.api;
 
+import com.google.gson.Gson;
+
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -37,6 +39,8 @@ public interface IStorageProvider<K,V> {
     CompletableFuture<List<V>> getAllEntries();
     
     void saveData(K key, V value);
+
+    void setGSON(Gson gson);
 
     /**
      * Custom load method
