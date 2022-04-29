@@ -1,4 +1,4 @@
-package xyz.refinedev.api.impl;
+package xyz.refinedev.storage.impl;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -7,7 +7,7 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ReplaceOptions;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import xyz.refinedev.api.IStorageProvider;
+import xyz.refinedev.storage.IStorageProvider;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;

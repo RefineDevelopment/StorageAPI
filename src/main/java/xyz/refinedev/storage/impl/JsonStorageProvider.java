@@ -1,11 +1,11 @@
-package xyz.refinedev.api.impl;
+package xyz.refinedev.storage.impl;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-import xyz.refinedev.api.IStorageProvider;
+import xyz.refinedev.storage.IStorageProvider;
 
 import java.io.File;
 import java.io.FileReader;

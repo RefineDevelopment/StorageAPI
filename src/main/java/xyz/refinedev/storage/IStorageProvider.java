@@ -1,4 +1,4 @@
-package xyz.refinedev.api;
+package xyz.refinedev.storage;
 
 import com.google.gson.Gson;
 

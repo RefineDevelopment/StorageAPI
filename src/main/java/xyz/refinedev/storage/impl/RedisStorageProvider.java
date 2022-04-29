@@ -1,10 +1,10 @@
-package xyz.refinedev.api.impl;
+package xyz.refinedev.storage.impl;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
-import xyz.refinedev.api.IStorageProvider;
+import xyz.refinedev.storage.IStorageProvider;
 
 import java.util.ArrayList;
 import java.util.List;
