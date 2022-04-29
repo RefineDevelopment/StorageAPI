@@ -4,8 +4,17 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>xyz.refinedev</groupId>
-    <artifactId>Fireball</artifactId>
+    <name>StorageAPI</name>
+    <url>https://dsc.gg/refine</url>
+    <description>Most Modern and Support Friendly Storage API</description>
+
+    <organization>
+        <name>Refine Development</name>
+        <url>https://dsc.gg/refine</url>
+    </organization>
+
+    <groupId>xyz.refinedev.api</groupId>
+    <artifactId>StorageAPI</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>

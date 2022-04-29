@@ -1,4 +1,4 @@
-package xyz.refinedev.fireball.impl;
+package xyz.refinedev.api.impl;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -6,7 +6,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.UpdateOptions;
 import org.bson.Document;
-import xyz.refinedev.fireball.IStorageProvider;
+import xyz.refinedev.api.IStorageProvider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,9 +18,7 @@ import java.util.concurrent.ForkJoinPool;
 public class MongoStorageProvider<K, V> implements IStorageProvider<K, V> {
 
     protected final Map<K, V> map = new ConcurrentHashMap<>();
-
     private final MongoCollection<Document> collection;
-
     private final Gson gson;
 
     /**

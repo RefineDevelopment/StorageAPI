@@ -1,10 +1,10 @@
-package xyz.refinedev.fireball.impl;
+package xyz.refinedev.api.impl;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
-import xyz.refinedev.fireball.IStorageProvider;
+import xyz.refinedev.api.IStorageProvider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,14 +15,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RedisStorageProvider<K,V> implements IStorageProvider<K,V> {
 
     protected final Map<K,V> map = new ConcurrentHashMap<>();
-
-    private final String password;
-
+    private final Gson gson = new Gson();
     private final JedisPool jedisPool;
 
-    private final Gson gson = new Gson();
-
-    private final String keyPrefix;
+    private final String password, keyPrefix;
 
     public RedisStorageProvider(String host, int port, String password, String keyPrefix) {
         this.password = password;

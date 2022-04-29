@@ -1,17 +1,16 @@
-package xyz.refinedev.fireball.impl;
+package xyz.refinedev.api.impl;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-import xyz.refinedev.fireball.IStorageProvider;
+import xyz.refinedev.api.IStorageProvider;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -21,14 +20,11 @@ import java.util.concurrent.ForkJoinPool;
 
 public class JsonStorageProvider<K, V> implements IStorageProvider<K, V> {
 
+    protected final Map<K, V> map = new ConcurrentHashMap<>();
     private final File file;
-
     private final Gson gson;
 
-    protected final Map<K, V> map = new ConcurrentHashMap<>();
-
     public JsonStorageProvider(String name, String directory) {
-
         this.file = new File(directory, name + ".json");
         this.gson = new Gson();
 
