@@ -22,7 +22,7 @@ import java.util.concurrent.ForkJoinPool;
 
 public class JsonStorageProvider<K, V> implements IStorageProvider<K, V> {
 
-    protected final Map<K, V> map = new ConcurrentHashMap<>();
+    private final Map<K, V> map = new ConcurrentHashMap<>();
     private final File file;
     private Gson gson;
 
@@ -121,6 +121,11 @@ public class JsonStorageProvider<K, V> implements IStorageProvider<K, V> {
     @Override
     public void setGSON(Gson gson) {
         this.gson = gson;
+    }
+
+    @Override
+    public Map<K, V> getCache() {
+        return this.map;
     }
 
     public File getFile() {

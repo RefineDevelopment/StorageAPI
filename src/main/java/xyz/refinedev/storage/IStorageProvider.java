@@ -3,6 +3,7 @@ package xyz.refinedev.storage;
 import com.google.gson.Gson;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public interface IStorageProvider<K,V> {
@@ -54,6 +55,12 @@ public interface IStorageProvider<K,V> {
      */
     void setGSON(Gson gson);
 
+    /**
+     * Get the Cache Map
+     *
+     * @return {@link Map}
+     */
+    Map<K, V> getCache();
 
     /**
      * Custom load method

@@ -21,7 +21,7 @@ public class MongoStorageProvider<K, V> implements IStorageProvider<K, V> {
 
     private static final ReplaceOptions REPLACE_OPTIONS = new ReplaceOptions().upsert(true);
 
-    protected final Map<K, V> map = new ConcurrentHashMap<>();
+    private final Map<K, V> map = new ConcurrentHashMap<>();
     private final MongoCollection<Document> collection;
     private Gson gson;
 
@@ -90,5 +90,10 @@ public class MongoStorageProvider<K, V> implements IStorageProvider<K, V> {
     @Override
     public void setGSON(Gson gson) {
         this.gson = gson;
+    }
+
+    @Override
+    public Map<K, V> getCache() {
+        return this.map;
     }
 }
