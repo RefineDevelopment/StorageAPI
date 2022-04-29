@@ -4,10 +4,12 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.UpdateOptions;
+import com.mongodb.client.model.ReplaceOptions;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import xyz.refinedev.api.IStorageProvider;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +18,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
 
 public class MongoStorageProvider<K, V> implements IStorageProvider<K, V> {
+
+    private static final ReplaceOptions REPLACE_OPTIONS = new ReplaceOptions().upsert(true);
 
     protected final Map<K, V> map = new ConcurrentHashMap<>();
     private final MongoCollection<Document> collection;
@@ -37,34 +41,32 @@ public class MongoStorageProvider<K, V> implements IStorageProvider<K, V> {
     }
 
     @Override
-    public CompletableFuture<List<V>> getAllEntries() {
+    public CompletableFuture<List<V>> fetchAllEntries() {
         return CompletableFuture.supplyAsync(() -> {
             List<V> found = new ArrayList<>();
             for (Document document : this.collection.find()) {
                 if (document == null) {
                     continue;
                 }
-                found.add(this.gson.fromJson(document.toJson(), new TypeToken<V>() {
-                }.getType()));
+                Type typeToken = new TypeToken<V>() {}.getType();
+                found.add(this.gson.fromJson(document.toJson(), typeToken));
             }
             return found;
         });
     }
 
     @Override
+    public List<V> getAllCached() {
+        return new ArrayList<>(this.map.values());
+    }
+
+    @Override
     public V getValueFromDataStore(K key) {
         Document document = this.collection.find(Filters.eq("_id", String.valueOf(key))).first();
+        if (document == null) return null;
 
-        if (document == null) {
-            return null;
-        }
-
-        V value = this.gson.fromJson(document.toJson(), new TypeToken<V>() {
-        }.getType());
-
-        if (value == null) {
-            return null;
-        }
+        V value = this.gson.fromJson(document.toJson(), new TypeToken<V>() {}.getType());
+        if (value == null) return null;
 
         this.map.put(key, value);
 
@@ -78,8 +80,11 @@ public class MongoStorageProvider<K, V> implements IStorageProvider<K, V> {
 
     @Override
     public void saveData(K key, V value) {
-        ForkJoinPool.commonPool()
-                .execute(() -> this.collection.replaceOne(Filters.eq("_id", String.valueOf(key)), Document.parse(gson.toJson(value)), new UpdateOptions().upsert(true)));
+        ForkJoinPool.commonPool().execute(() -> {
+            Bson query = Filters.eq("_id", String.valueOf(key));
+            Document parsed = Document.parse(gson.toJson(value));
+            this.collection.replaceOne(query, parsed, REPLACE_OPTIONS);
+        });
     }
 
     @Override

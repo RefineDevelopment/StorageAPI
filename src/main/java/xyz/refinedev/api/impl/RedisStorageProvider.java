@@ -46,7 +46,7 @@ public class RedisStorageProvider<K,V> implements IStorageProvider<K,V> {
     }
 
     @Override
-    public CompletableFuture<List<V>> getAllEntries() {
+    public CompletableFuture<List<V>> fetchAllEntries() {
         return CompletableFuture.supplyAsync(() -> {
             List<V> found = new ArrayList<>();
             try (Jedis jedis = this.jedisPool.getResource()) {
@@ -58,6 +58,11 @@ public class RedisStorageProvider<K,V> implements IStorageProvider<K,V> {
             }
             return found;
         });
+    }
+
+    @Override
+    public List<V> getAllCached() {
+        return new ArrayList<>(this.map.values());
     }
 
     @Override

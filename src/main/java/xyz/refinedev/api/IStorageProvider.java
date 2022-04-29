@@ -36,10 +36,22 @@ public interface IStorageProvider<K,V> {
      *
      * @return {@link CompletableFuture<List>}
      */
-    CompletableFuture<List<V>> getAllEntries();
+    CompletableFuture<List<V>> fetchAllEntries();
+
+    /**
+     * Get all values directly by fetching it from db, async
+     *
+     * @return {@link List<V>}
+     */
+    List<V> getAllCached();
     
     void saveData(K key, V value);
 
+    /**
+     * Set your own GSON
+     *
+     * @param gson {@link Gson}
+     */
     void setGSON(Gson gson);
 
     /**

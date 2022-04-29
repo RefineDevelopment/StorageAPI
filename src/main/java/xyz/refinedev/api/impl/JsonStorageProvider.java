@@ -11,6 +11,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -42,11 +44,18 @@ public class JsonStorageProvider<K, V> implements IStorageProvider<K, V> {
         return this.map.getOrDefault(key, null);
     }
 
+
     @Override
-    public CompletableFuture<List<V>> getAllEntries() {
+    public List<V> getAllCached() {
+        return new ArrayList<>(this.map.values());
+    }
+
+    @Override
+    public CompletableFuture<List<V>> fetchAllEntries() {
         return CompletableFuture.supplyAsync(() -> {
             try (FileReader fileReader = new FileReader(this.file)) {
-                List<V> found = this.gson.fromJson(fileReader, new TypeToken<List<V>>(){}.getType());
+                Type typeToken = new TypeToken<V>() {}.getType();
+                List<V> found = this.gson.fromJson(fileReader, typeToken);
 
                 if (found == null || found.isEmpty()) {
                     return Collections.emptyList();
@@ -72,8 +81,8 @@ public class JsonStorageProvider<K, V> implements IStorageProvider<K, V> {
                 JsonObject object = jsonElement.getAsJsonObject();
 
                 if (object.get("_id").getAsString().equalsIgnoreCase(String.valueOf(key))) {
-                    V val = gson.fromJson(object, new TypeToken<V>() {
-                    }.getType());
+                    Type typeToken = new TypeToken<V>() {}.getType();
+                    V val = gson.fromJson(object, typeToken);
                     this.map.put(key, val);
                     return val;
                 }
