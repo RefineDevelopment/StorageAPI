@@ -80,6 +80,15 @@ public class RedisStorageProvider<K,V> implements IStorageProvider<K,V> {
     }
 
     @Override
+    public void deleteData(K key) {
+        try (Jedis jedis = jedisPool.getResource()) {
+            if (!password.isEmpty()) jedis.auth(password);
+
+            jedis.expire(keyPrefix + "_" + key, 1L);
+        }
+    }
+
+    @Override
     public void setGSON(Gson gson) {
         this.gson = gson;
     }

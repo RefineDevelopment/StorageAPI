@@ -49,6 +49,13 @@ public interface IStorageProvider<K,V> {
     void saveData(K key, V value);
 
     /**
+     * Deletes the designated query from the db
+     *
+     * @param key
+     */
+    void deleteData(K key);
+
+    /**
      * Set your own GSON
      *
      * @param gson {@link Gson}
@@ -72,8 +79,4 @@ public interface IStorageProvider<K,V> {
      */
     default void save() {}
 
-    /**
-     * Custom unload method
-     */
-    default void unload() {}
 }

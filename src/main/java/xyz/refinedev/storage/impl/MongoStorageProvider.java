@@ -88,6 +88,15 @@ public class MongoStorageProvider<K, V> implements IStorageProvider<K, V> {
     }
 
     @Override
+    public void deleteData(K key) {
+        ForkJoinPool.commonPool().execute(() -> {
+            this.map.remove(key);
+            Bson query = Filters.eq("_id", String.valueOf(key));
+            this.collection.deleteOne(query);
+        });
+    }
+
+    @Override
     public void setGSON(Gson gson) {
         this.gson = gson;
     }

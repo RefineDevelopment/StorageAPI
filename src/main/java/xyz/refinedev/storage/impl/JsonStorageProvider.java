@@ -119,6 +119,13 @@ public class JsonStorageProvider<K, V> implements IStorageProvider<K, V> {
     }
 
     @Override
+    public void deleteData(K key) {
+        ForkJoinPool.commonPool().execute(() -> this.map.remove(key));
+        this.getAllCached().forEach(this::saveData);
+    }
+
+
+    @Override
     public void setGSON(Gson gson) {
         this.gson = gson;
     }
