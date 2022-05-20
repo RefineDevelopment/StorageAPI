@@ -68,7 +68,7 @@ public class MongoStorageProvider<K, V> implements IStorageProvider<K, V> {
         V value = this.gson.fromJson(document.toJson(), new TypeToken<V>() {}.getType());
         if (value == null) return null;
 
-        this.map.put(key, value);
+        this.map.putIfAbsent(key, value);
 
         return value;
     }
@@ -83,6 +83,7 @@ public class MongoStorageProvider<K, V> implements IStorageProvider<K, V> {
         ForkJoinPool.commonPool().execute(() -> {
             Bson query = Filters.eq("_id", String.valueOf(key));
             Document parsed = Document.parse(gson.toJson(value));
+            this.map.putIfAbsent(key, value);
             this.collection.replaceOne(query, parsed, REPLACE_OPTIONS);
         });
     }

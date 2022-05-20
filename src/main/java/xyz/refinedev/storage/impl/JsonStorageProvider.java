@@ -44,7 +44,6 @@ public class JsonStorageProvider<K, V> implements IStorageProvider<K, V> {
         return this.map.getOrDefault(key, null);
     }
 
-
     @Override
     public List<V> getAllCached() {
         return new ArrayList<>(this.map.values());
@@ -83,7 +82,7 @@ public class JsonStorageProvider<K, V> implements IStorageProvider<K, V> {
                 if (object.get("_id").getAsString().equalsIgnoreCase(String.valueOf(key))) {
                     Type typeToken = new TypeToken<V>() {}.getType();
                     V val = gson.fromJson(object, typeToken);
-                    this.map.put(key, val);
+                    this.map.putIfAbsent(key, val);
                     return val;
                 }
             }
@@ -104,11 +103,11 @@ public class JsonStorageProvider<K, V> implements IStorageProvider<K, V> {
         ForkJoinPool.commonPool().execute(() -> {
             JsonArray array = new JsonArray();
 
+            this.map.putIfAbsent(key, value); // They could already be present so be careful lol
+
             for (V val : this.map.values()) {
                 array.add(gson.toJson(val));
             }
-
-            array.add(this.gson.toJson(value));
 
             try (FileWriter fileWriter = new FileWriter(this.file)) {
                 gson.toJson(array, fileWriter);
@@ -121,7 +120,7 @@ public class JsonStorageProvider<K, V> implements IStorageProvider<K, V> {
     @Override
     public void deleteData(K key) {
         ForkJoinPool.commonPool().execute(() -> this.map.remove(key));
-        this.getAllCached().forEach(this::saveData);
+        this.getCache().forEach(this::saveData);
     }
 
 
@@ -137,9 +136,5 @@ public class JsonStorageProvider<K, V> implements IStorageProvider<K, V> {
 
     public File getFile() {
         return file;
-    }
-
-    public void saveData(V value) {
-        this.saveData(null, value);
     }
 }
