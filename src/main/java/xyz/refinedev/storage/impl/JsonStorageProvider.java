@@ -1,5 +1,7 @@
 package xyz.refinedev.storage.impl;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -9,7 +11,6 @@ import xyz.refinedev.storage.IStorageProvider;
 
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -109,10 +110,10 @@ public class JsonStorageProvider<K, V> implements IStorageProvider<K, V> {
                 array.add(gson.toJson(val));
             }
 
-            try (FileWriter fileWriter = new FileWriter(this.file)) {
-                gson.toJson(array, fileWriter);
-            } catch (IOException exception) {
-                exception.printStackTrace();
+            try {
+                Files.write(gson.toJson(array), file, Charsets.UTF_8);
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         });
     }
