@@ -216,4 +216,12 @@ public abstract class YamlStorage {
     public ConfigurationSection getConfigurationSection(String path) {
         return this.config.getConfigurationSection(path);
     }
+
+    public ConfigurationSection createSection(String path) {
+        return this.config.createSection(path);
+    }
+
+    public YamlConfiguration getConfiguration() {
+        return this.config;
+    }
 }
