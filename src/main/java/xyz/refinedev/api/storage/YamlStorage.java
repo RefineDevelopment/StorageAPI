@@ -1,5 +1,6 @@
 package xyz.refinedev.api.storage;
 
+import org.apache.commons.io.Charsets;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -33,7 +34,6 @@ public abstract class YamlStorage {
     /*========================================================================*/
     private final String name;
     private final YamlFile config;
-    private File file;
     /*========================================================================*/
 
     /**
@@ -44,9 +44,11 @@ public abstract class YamlStorage {
      * @param saveResource {@link Boolean should we save our built-in config}
      */
     public YamlStorage(JavaPlugin plugin, String name, boolean saveResource) {
+        File file = new File(plugin.getDataFolder(), name + ".yml");
+
         this.name = name;
-        this.file = new File(plugin.getDataFolder(), name + ".yml");
         this.config = new YamlFile(file);
+        this.config.options().charset(Charsets.UTF_8);
 
         if (!file.exists()) {
             try {
@@ -63,10 +65,10 @@ public abstract class YamlStorage {
 
         try {
             if (saveResource) {
+                this.config.options().useComments(true);
                 this.config.load(file);
             } else {
                 this.config.load();
-                this.file = this.config.getConfigurationFile();
             }
         } catch (IOException ex) {
             LOGGER.error("[Storage] Could not load " + name + ".yml, please correct your syntax errors!");
@@ -86,12 +88,20 @@ public abstract class YamlStorage {
             try {
                 ConfigValue configValue = field.getAnnotation(ConfigValue.class);
                 Object value = field.get(null);
+
+                // Load the field's value from config
                 if (this.config.contains(configValue.path()) && this.config.get(configValue.path()) != null) {
                     field.set(this, config.get(configValue.path()));
                 } else {
-                    this.config.set(configValue.path(), value);
+                    this.config.set(configValue.path(), value); // Add a default value from the field
                 }
-                this.config.setComment(configValue.path(), configValue.comment());
+
+                // Don't go adding empty comments, they'll just create empty lines
+                // between different keys, making config look awful
+                if (configValue.comment().length() > 0) {
+                    this.config.setComment(configValue.path(), configValue.comment());
+                }
+
             } catch (IllegalArgumentException | IllegalAccessException ex) {
                 LOGGER.error("[Storage] Error invoking " + field, ex);
             }
