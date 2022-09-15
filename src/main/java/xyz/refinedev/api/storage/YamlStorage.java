@@ -2,20 +2,20 @@ package xyz.refinedev.api.storage;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import org.bukkit.ChatColor;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
-import xyz.refinedev.api.storage.utils.ConfigSaver;
+
+import org.simpleyaml.configuration.ConfigurationSection;
+import org.simpleyaml.configuration.file.YamlConfiguration;
+import org.simpleyaml.configuration.file.YamlFile;
+
 import xyz.refinedev.api.storage.utils.ConfigValue;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * This Project is property of Refine Development © 2021 - 2022
@@ -32,9 +32,8 @@ public abstract class YamlStorage {
 
     /*========================================================================*/
     private final String name;
-    private final File file;
-    private final YamlConfiguration config;
-    private final Map<String, String> comments;
+    private final YamlFile config;
+    private File file;
     /*========================================================================*/
 
     /**
@@ -47,16 +46,14 @@ public abstract class YamlStorage {
     public YamlStorage(JavaPlugin plugin, String name, boolean saveResource) {
         this.name = name;
         this.file = new File(plugin.getDataFolder(), name + ".yml");
-        this.config = new YamlConfiguration();
-        this.comments = new HashMap<>();
+        this.config = new YamlFile(file);
 
         if (!file.exists()) {
             try {
                 if (saveResource) {
                     plugin.saveResource(name + ".yml", false);
                 } else {
-                    boolean created = file.createNewFile();
-                    if (!created) throw new IOException("Failed to create file");
+                    this.config.createNewFile(false);
                 }
             } catch (IOException ex) {
                 LOGGER.error("[Storage] Could not create/save " + name + ".yml!");
@@ -65,13 +62,18 @@ public abstract class YamlStorage {
         }
 
         try {
-            config.load(file);
-        } catch (InvalidConfigurationException | IOException ex) {
+            if (saveResource) {
+                this.config.load(file);
+            } else {
+                this.config.load();
+                this.file = this.config.getConfigurationFile();
+            }
+        } catch (IOException ex) {
             LOGGER.error("[Storage] Could not load " + name + ".yml, please correct your syntax errors!");
             LOGGER.error("[Storage] Error: " + ex.getMessage());
         }
 
-        config.options().header(String.join("\n", this.getHeader()));
+        this.config.options().header(String.join("\n", this.getHeader()));
         this.readConfig();
     }
 
@@ -84,19 +86,19 @@ public abstract class YamlStorage {
             try {
                 ConfigValue configValue = field.getAnnotation(ConfigValue.class);
                 Object value = field.get(null);
-                if (config.contains(configValue.path()) && config.get(configValue.path()) != null) {
+                if (this.config.contains(configValue.path()) && this.config.get(configValue.path()) != null) {
                     field.set(this, config.get(configValue.path()));
                 } else {
-                    config.set(configValue.path(), value);
+                    this.config.set(configValue.path(), value);
                 }
-                comments.putIfAbsent(configValue.path(), configValue.comment());
+                this.config.setComment(configValue.path(), configValue.comment());
             } catch (IllegalArgumentException | IllegalAccessException ex) {
                 LOGGER.error("[Storage] Error invoking " + field, ex);
             }
         }
 
         this.addSeparateComments();
-        this.saveConfig(true);
+        this.saveConfig();
     }
 
     /**
@@ -114,21 +116,16 @@ public abstract class YamlStorage {
                 LOGGER.error("[Storage] Error invoking " + field, ex);
             }
         }
-        this.saveConfig(true);
+        this.saveConfig();
     }
 
     /**
      * Save the YAMLConfig (Bukkit API)
-     *
-     * @param comments {@link Boolean} should we save comments too?
      */
-    private void saveConfig(boolean comments) {
+    private void saveConfig() {
         try {
-            config.save(file);
-            if (comments && !this.comments.isEmpty()) {
-                ConfigSaver.writeWithComments(file, config, this.comments);
-            }
-        } catch (Exception e) {
+            config.save();
+        } catch (IOException e) {
             LOGGER.error("[Storage] Unable to save " + name + ".yml!");
         }
     }
@@ -138,7 +135,7 @@ public abstract class YamlStorage {
      */
     private void clearConfig() {
         this.config.getKeys(false).forEach(key -> config.set(key, null));
-        this.saveConfig(false);
+        this.saveConfig();
     }
 
     /**
@@ -202,7 +199,7 @@ public abstract class YamlStorage {
     }
 
     public void addComment(String path, String comment) {
-        this.comments.put(path, comment);
+        this.config.setComment(path, comment);
     }
 
     public Object get(String path) {
