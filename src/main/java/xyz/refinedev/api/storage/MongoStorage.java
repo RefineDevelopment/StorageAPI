@@ -63,7 +63,7 @@ public class MongoStorage<V> {
     }
 
     public void saveData(UUID key, V value, Type type) {
-        ForkJoinPool.commonPool().execute(() -> {
+        CompletableFuture.runAsync(() -> {
             Bson query = Filters.eq("_id", key.toString());
             Document parsed = Document.parse(gson.toJson(value, type));
             this.collection.replaceOne(query, parsed, REPLACE_OPTIONS);
@@ -77,9 +77,9 @@ public class MongoStorage<V> {
     }
 
     public void saveRawData(UUID key, Document document) {
-        ForkJoinPool.commonPool().execute(() -> {
+        CompletableFuture.runAsync(() -> {
             Bson query = Filters.eq("_id", key.toString());
-            this.collection.replaceOne(query, document, REPLACE_OPTIONS);
+            this.collection.replaceOne(query, document, new UpdateOptions().upsert(true));
         });
     }
 
@@ -112,7 +112,7 @@ public class MongoStorage<V> {
     }
 
     public void deleteData(UUID key) {
-        ForkJoinPool.commonPool().execute(() -> {
+        CompletableFuture.runAsync(() -> {
             Bson query = Filters.eq("_id", key.toString());
             this.collection.deleteOne(query);
         });
