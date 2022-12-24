@@ -7,6 +7,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ReplaceOptions;
 
+import com.mongodb.client.model.UpdateOptions;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
@@ -27,9 +28,6 @@ import java.util.concurrent.ForkJoinPool;
  */
 
 public class MongoStorage<V> {
-
-    private static final ReplaceOptions REPLACE_OPTIONS = new ReplaceOptions().upsert(true);
-
     private final MongoCollection<Document> collection;
     private final Gson gson;
 
@@ -63,23 +61,23 @@ public class MongoStorage<V> {
     }
 
     public void saveData(UUID key, V value, Type type) {
-        ForkJoinPool.commonPool().execute(() -> {
+        CompletableFuture.runAsync(() -> {
             Bson query = Filters.eq("_id", String.valueOf(key));
             Document parsed = Document.parse(gson.toJson(value, type));
-            this.collection.replaceOne(query, parsed, REPLACE_OPTIONS);
+            this.collection.replaceOne(query, parsed, new UpdateOptions().upsert(true));
         });
     }
 
     public void saveDataSync(UUID key, V value, Type type) {
         Bson query = Filters.eq("_id", String.valueOf(key));
         Document parsed = Document.parse(gson.toJson(value, type));
-        this.collection.replaceOne(query, parsed, REPLACE_OPTIONS);
+        this.collection.replaceOne(query, parsed, new UpdateOptions().upsert(true));
     }
 
     public void saveRawData(UUID key, Document document) {
-        ForkJoinPool.commonPool().execute(() -> {
+        CompletableFuture.runAsync(() -> {
             Bson query = Filters.eq("_id", String.valueOf(key));
-            this.collection.replaceOne(query, document, REPLACE_OPTIONS);
+            this.collection.replaceOne(query, document, new UpdateOptions().upsert(true));
         });
     }
 
@@ -112,7 +110,7 @@ public class MongoStorage<V> {
     }
 
     public void deleteData(UUID key) {
-        ForkJoinPool.commonPool().execute(() -> {
+        CompletableFuture.runAsync(() -> {
             Bson query = Filters.eq("_id", String.valueOf(key));
             this.collection.deleteOne(query);
         });
