@@ -11,8 +11,8 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.github.paperspigot:1.8.8:1.8.8" level="project" />
     <orderEntry type="library" scope="PROVIDED" name="Maven: org.mongodb:mongo-java-driver:3.12.10" level="project" />
-    <orderEntry type="library" name="Maven: me.carleslc.Simple-YAML:Simple-Yaml:1.8.1" level="project" />
-    <orderEntry type="library" name="Maven: me.carleslc.Simple-YAML:Simple-Configuration:1.8.1" level="project" />
-    <orderEntry type="library" name="Maven: org.yaml:snakeyaml:1.30" level="project" />
+    <orderEntry type="library" name="Maven: me.carleslc.Simple-YAML:Simple-Yaml:1.8.3" level="project" />
+    <orderEntry type="library" name="Maven: me.carleslc.Simple-YAML:Simple-Configuration:1.8.3" level="project" />
+    <orderEntry type="library" name="Maven: org.yaml:snakeyaml:1.33" level="project" />
   </component>
 </module>

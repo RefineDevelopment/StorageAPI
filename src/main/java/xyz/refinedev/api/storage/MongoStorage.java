@@ -64,27 +64,27 @@ public class MongoStorage<V> {
 
     public void saveData(UUID key, V value, Type type) {
         ForkJoinPool.commonPool().execute(() -> {
-            Bson query = Filters.eq("_id", String.valueOf(key));
+            Bson query = Filters.eq("_id", key.toString());
             Document parsed = Document.parse(gson.toJson(value, type));
             this.collection.replaceOne(query, parsed, REPLACE_OPTIONS);
         });
     }
 
     public void saveDataSync(UUID key, V value, Type type) {
-        Bson query = Filters.eq("_id", String.valueOf(key));
+        Bson query = Filters.eq("_id", key.toString());
         Document parsed = Document.parse(gson.toJson(value, type));
         this.collection.replaceOne(query, parsed, REPLACE_OPTIONS);
     }
 
     public void saveRawData(UUID key, Document document) {
         ForkJoinPool.commonPool().execute(() -> {
-            Bson query = Filters.eq("_id", String.valueOf(key));
+            Bson query = Filters.eq("_id", key.toString());
             this.collection.replaceOne(query, document, REPLACE_OPTIONS);
         });
     }
 
     public V loadData(UUID key, Type type) {
-        Bson query = Filters.eq("_id", String.valueOf(key));
+        Bson query = Filters.eq("_id", key.toString());
         Document document = this.collection.find(query).first();
         if (document == null) return null;
         return this.gson.fromJson(document.toJson(), type);
@@ -92,7 +92,7 @@ public class MongoStorage<V> {
 
     public CompletableFuture<V> loadDataAsync(UUID key, Type type) {
         return CompletableFuture.supplyAsync(() -> {
-            Bson query = Filters.eq("_id", String.valueOf(key));
+            Bson query = Filters.eq("_id", key.toString());
             Document document = this.collection.find(query).first();
             if (document == null) return null;
             return this.gson.fromJson(document.toJson(), type);
@@ -100,20 +100,20 @@ public class MongoStorage<V> {
     }
 
     public Document loadRawData(UUID key) {
-        Bson query = Filters.eq("_id", String.valueOf(key));
+        Bson query = Filters.eq("_id", key.toString());
         return this.collection.find(query).first();
     }
 
     public CompletableFuture<Document> loadRawDataAsync(UUID key) {
         return CompletableFuture.supplyAsync(() -> {
-            Bson query = Filters.eq("_id", String.valueOf(key));
+            Bson query = Filters.eq("_id", key.toString());
             return this.collection.find(query).first();
         });
     }
 
     public void deleteData(UUID key) {
         ForkJoinPool.commonPool().execute(() -> {
-            Bson query = Filters.eq("_id", String.valueOf(key));
+            Bson query = Filters.eq("_id", key.toString());
             this.collection.deleteOne(query);
         });
     }

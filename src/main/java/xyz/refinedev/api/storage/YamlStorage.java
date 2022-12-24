@@ -132,7 +132,7 @@ public abstract class YamlStorage {
     /**
      * Save the YAMLConfig (Bukkit API)
      */
-    private void saveConfig() {
+    public void saveConfig() {
         try {
             config.save();
         } catch (IOException e) {
