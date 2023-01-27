@@ -1,4 +1,4 @@
-package xyz.refinedev.api.storage.utils;
+package xyz.refinedev.api.storage.annotations;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

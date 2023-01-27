@@ -11,7 +11,7 @@ import org.simpleyaml.configuration.ConfigurationSection;
 import org.simpleyaml.configuration.file.YamlConfiguration;
 import org.simpleyaml.configuration.file.YamlFile;
 
-import xyz.refinedev.api.storage.utils.ConfigValue;
+import xyz.refinedev.api.storage.annotations.ConfigValue;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,6 +27,7 @@ import java.util.List;
  * Project: StorageAPI
  */
 
+@SuppressWarnings("unused")
 public abstract class YamlStorage {
 
     private static final Logger LOGGER = LogManager.getLogger(YamlStorage.class);
@@ -126,6 +127,7 @@ public abstract class YamlStorage {
                 LOGGER.error("[Storage] Error invoking " + field, ex);
             }
         }
+
         this.saveConfig();
     }
 
@@ -143,7 +145,7 @@ public abstract class YamlStorage {
     /**
      * Clear the config of any values or paths
      */
-    private void clearConfig() {
+    public void clearConfig() {
         this.config.getKeys(false).forEach(key -> config.set(key, null));
         this.saveConfig();
     }

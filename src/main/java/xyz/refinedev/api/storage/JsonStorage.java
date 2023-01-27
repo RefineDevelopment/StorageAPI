@@ -2,6 +2,7 @@ package xyz.refinedev.api.storage;
 
 import com.google.common.io.Files;
 import com.google.gson.Gson;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -22,6 +23,7 @@ import java.util.concurrent.ForkJoinPool;
  * Project: StorageAPI
  */
 
+@SuppressWarnings("unused")
 public class JsonStorage<T> {
     
     private static final Logger LOGGER = LogManager.getLogger(JsonStorage.class);

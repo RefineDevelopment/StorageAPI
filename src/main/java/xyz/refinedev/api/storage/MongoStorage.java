@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ForkJoinPool;
 
 /**
  * This Project is property of Refine Development © 2021 - 2022
@@ -26,6 +25,7 @@ import java.util.concurrent.ForkJoinPool;
  * Project: StorageAPI
  */
 
+@SuppressWarnings("unused")
 public class MongoStorage<V> {
 
     private static final ReplaceOptions REPLACE_OPTIONS = new ReplaceOptions().upsert(true);
@@ -63,11 +63,7 @@ public class MongoStorage<V> {
     }
 
     public void saveData(UUID key, V value, Type type) {
-        CompletableFuture.runAsync(() -> {
-            Bson query = Filters.eq("_id", key.toString());
-            Document parsed = Document.parse(gson.toJson(value, type));
-            this.collection.replaceOne(query, parsed, REPLACE_OPTIONS);
-        });
+        CompletableFuture.runAsync(() -> this.saveDataSync(key, value, type));
     }
 
     public void saveDataSync(UUID key, V value, Type type) {
@@ -77,26 +73,25 @@ public class MongoStorage<V> {
     }
 
     public void saveRawData(UUID key, Document document) {
-        CompletableFuture.runAsync(() -> {
-            Bson query = Filters.eq("_id", key.toString());
-            this.collection.replaceOne(query, document, new UpdateOptions().upsert(true));
-        });
+        CompletableFuture.runAsync(() -> this.saveRawDataSync(key, document));
+    }
+
+    public void saveRawDataSync(UUID key, Document document) {
+        Bson query = Filters.eq("_id", key.toString());
+        this.collection.replaceOne(query, document, REPLACE_OPTIONS);
     }
 
     public V loadData(UUID key, Type type) {
         Bson query = Filters.eq("_id", key.toString());
+
         Document document = this.collection.find(query).first();
         if (document == null) return null;
+
         return this.gson.fromJson(document.toJson(), type);
     }
 
     public CompletableFuture<V> loadDataAsync(UUID key, Type type) {
-        return CompletableFuture.supplyAsync(() -> {
-            Bson query = Filters.eq("_id", key.toString());
-            Document document = this.collection.find(query).first();
-            if (document == null) return null;
-            return this.gson.fromJson(document.toJson(), type);
-        });
+        return CompletableFuture.supplyAsync(() -> this.loadData(key, type));
     }
 
     public Document loadRawData(UUID key) {
@@ -105,10 +100,7 @@ public class MongoStorage<V> {
     }
 
     public CompletableFuture<Document> loadRawDataAsync(UUID key) {
-        return CompletableFuture.supplyAsync(() -> {
-            Bson query = Filters.eq("_id", key.toString());
-            return this.collection.find(query).first();
-        });
+        return CompletableFuture.supplyAsync(() -> this.loadRawData(key));
     }
 
     public void deleteData(UUID key) {
