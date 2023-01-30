@@ -81,6 +81,11 @@ public class ClassBasedYamlStorage extends YamlStorage {
                 Class<?> fieldClass = field.getType();
                 int modifiers = fieldClass.getModifiers();
                 if (Modifier.isStatic(modifiers) && Modifier.isPublic(modifiers)) {
+                    try {
+                        field.set(this, fieldClass.newInstance());
+                    } catch (IllegalArgumentException | IllegalAccessException | InstantiationException ex) {
+                        LOGGER.error("[Storage] Error invoking " + field + " with parent key " + path, ex);
+                    }
                     this.readValueForField(fieldClass, path);
                 } else {
                     LOGGER.error("[Storage] The field " + fieldClass.getSimpleName() + " is not static or public, can not convert to config!");
@@ -112,7 +117,9 @@ public class ClassBasedYamlStorage extends YamlStorage {
 
             Comment comment = field.getAnnotation(Comment.class);
             if (comment != null) {
-                this.addComment(fieldPath, comment.comment());
+                for ( String string : comment.value() ) {
+                    this.addComment(fieldPath, string);
+                }
             }
 
             // It's a custom object class, not a simple field then
@@ -120,6 +127,11 @@ public class ClassBasedYamlStorage extends YamlStorage {
                 Class<?> fieldClass = field.getType();
                 int modifiers = fieldClass.getModifiers();
                 if (Modifier.isStatic(modifiers) && Modifier.isPublic(modifiers)) {
+                    try {
+                        field.set(this, fieldClass.newInstance());
+                    } catch (IllegalArgumentException | IllegalAccessException | InstantiationException ex) {
+                        LOGGER.error("[Storage] Error invoking " + field + " with parent key " + path, ex);
+                    }
                     this.readFieldClass(fieldClass, fieldPath);
                 } else {
                     LOGGER.error("[Storage] The field " + fieldClass.getSimpleName() + " is not static or public, can not convert to config!");

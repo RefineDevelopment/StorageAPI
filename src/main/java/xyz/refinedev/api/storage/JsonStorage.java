@@ -9,9 +9,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ForkJoinPool;
 
 /**
@@ -77,7 +79,7 @@ public class JsonStorage<T> {
      * @param list {@link T type}
      */
     public void saveAsync(T list) {
-        ForkJoinPool.commonPool().execute(() -> this.save(list));
+        CompletableFuture.runAsync(() -> this.save(list));
     }
 
     /**
@@ -86,10 +88,10 @@ public class JsonStorage<T> {
      * @param list {@link T type}
      */
     public void save(T list) {
-        try {
-            Files.write(gson.toJson(list), file, StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            e.printStackTrace();
+        try (FileWriter fileWriter = new FileWriter(this.file)) {
+            this.gson.toJson(list, fileWriter);
+        } catch (IOException exception) {
+            exception.printStackTrace();
         }
     }
 }

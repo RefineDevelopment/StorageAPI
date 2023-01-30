@@ -29,9 +29,10 @@ public class BasicYamlStorage extends YamlStorage {
      *
      * @param plugin       {@link JavaPlugin plugin instance}
      * @param name         {@link String config file name}
+     * @param saveResource {@link Boolean save the resource from plugin}
      */
-    public BasicYamlStorage(JavaPlugin plugin, String name) {
-        super(plugin, name, true);
+    public BasicYamlStorage(JavaPlugin plugin, String name, boolean saveResource) {
+        super(plugin, name, saveResource);
     }
 
     /**
