@@ -11,6 +11,8 @@ import xyz.refinedev.api.storage.annotations.Create;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -23,7 +25,7 @@ import java.util.List;
  */
 
 @SuppressWarnings("unused")
-public class ClassBasedYamlStorage extends YamlStorage {
+public abstract class ClassBasedYamlStorage extends YamlStorage {
 
     private static final Logger LOGGER = LogManager.getLogger(ClassBasedYamlStorage.class);
 
@@ -36,6 +38,7 @@ public class ClassBasedYamlStorage extends YamlStorage {
      */
     public ClassBasedYamlStorage(JavaPlugin plugin, String name, boolean saveResource) {
         super(plugin, name, saveResource);
+        this.writeConfig();
     }
 
     /**
@@ -49,7 +52,9 @@ public class ClassBasedYamlStorage extends YamlStorage {
      * Read the config values from file and assign them to our classes' fields
      */
     public void readConfig() {
-        this.readValueForField(this.getClass(), null);
+        this.readValueForField(this.getClass(), this.getConfigFields(), null);
+        this.addSeparateComments();
+        this.saveConfig();
     }
 
     /**
@@ -57,7 +62,7 @@ public class ClassBasedYamlStorage extends YamlStorage {
      */
     public void writeConfig() {
         this.clearConfig();
-        this.readFieldClass(this.getClass(), null);
+        this.readFieldClass(this.getClass(), this.getConfigFields(), null);
         this.saveConfig();
     }
 
@@ -66,35 +71,50 @@ public class ClassBasedYamlStorage extends YamlStorage {
      * from the config file and assigns its value accordingly
      *
      * @param clazz      {@link Class clazz}
+     * @param fields     {@link Collection fields}
      * @param parentPath {@link String path}
      */
-    public void readValueForField(Class<?> clazz, String parentPath) {
-        for ( Field field : clazz.getFields()) {
-
+    public void readValueForField(Class<?> clazz, Collection<Field> fields, String parentPath) {
+        for ( Field field : fields) {
             String path = this.toNode(field);
             if (parentPath != null && parentPath.length() > 0) {
                 path = parentPath + "." + path;
             }
 
             // It's a custom object class, not a simple field then
-            if (field.getType().isAnnotationPresent(Create.class)) {
+            if (field.isAnnotationPresent(Create.class)) {
                 Class<?> fieldClass = field.getType();
                 int modifiers = fieldClass.getModifiers();
                 if (Modifier.isStatic(modifiers) && Modifier.isPublic(modifiers)) {
                     try {
-                        field.set(this, fieldClass.newInstance());
+                        field.set(clazz == this.getClass() ? this : clazz.newInstance(), fieldClass.newInstance());
                     } catch (IllegalArgumentException | IllegalAccessException | InstantiationException ex) {
-                        LOGGER.error("[Storage] Error invoking " + field + " with parent key " + path, ex);
+                        LOGGER.error("[Storage] Error invoking " + field + " with parent key " + parentPath, ex);
+                        continue;
                     }
-                    this.readValueForField(fieldClass, path);
+                    this.readValueForField(fieldClass, Arrays.asList(fieldClass.getFields()), path);
                 } else {
                     LOGGER.error("[Storage] The field " + fieldClass.getSimpleName() + " is not static or public, can not convert to config!");
                 }
             } else {
                 try {
-                    field.set(this, this.get(path));
-                } catch (IllegalArgumentException | IllegalAccessException ex) {
-                    LOGGER.error("[Storage] Error invoking " + field + " with parent key " + path, ex);
+                    Object value;
+                    if (!this.contains(path)) {
+                        value = field.get(clazz.newInstance());
+                        this.set(path, value);
+
+                        if (field.isAnnotationPresent(Comment.class)) {
+                            Comment comment = field.getAnnotation(Comment.class);
+                            for ( String string : comment.value() ) {
+                                this.addComment(path, string);
+                            }
+                        }
+                    } else {
+                        value = this.get(path);
+                        field.set(clazz.newInstance(), value);
+                    }
+                } catch (IllegalArgumentException | IllegalAccessException | InstantiationException ex) {
+                    LOGGER.error("[Storage] Error invoking " + field.getName() + " with parent key " + parentPath, ex);
                 }
             }
         }
@@ -107,41 +127,42 @@ public class ClassBasedYamlStorage extends YamlStorage {
      * @param clazz      {@link Class clazz}
      * @param path {@link String path}
      */
-    private void readFieldClass(Class<?> clazz, String path) {
-        for ( Field field : clazz.getFields() ) {
+    public void readFieldClass(Class<?> clazz, Collection<Field> fields, String path) {
+        for ( Field field : fields ) {
             String fieldPath = this.toNode(field);
 
             if (path != null && path.length() > 0) {
                 fieldPath = path + "." + fieldPath;
             }
 
-            Comment comment = field.getAnnotation(Comment.class);
-            if (comment != null) {
+            if (field.isAnnotationPresent(Comment.class)) {
+                Comment comment = field.getAnnotation(Comment.class);
                 for ( String string : comment.value() ) {
                     this.addComment(fieldPath, string);
                 }
             }
 
             // It's a custom object class, not a simple field then
-            if (field.getType().isAnnotationPresent(Create.class)) {
+            if (field.isAnnotationPresent(Create.class)) {
                 Class<?> fieldClass = field.getType();
                 int modifiers = fieldClass.getModifiers();
                 if (Modifier.isStatic(modifiers) && Modifier.isPublic(modifiers)) {
                     try {
-                        field.set(this, fieldClass.newInstance());
+                        field.set(clazz == this.getClass() ? this : clazz.newInstance(), fieldClass.newInstance());
                     } catch (IllegalArgumentException | IllegalAccessException | InstantiationException ex) {
                         LOGGER.error("[Storage] Error invoking " + field + " with parent key " + path, ex);
+                        continue;
                     }
-                    this.readFieldClass(fieldClass, fieldPath);
+                    this.readFieldClass(fieldClass, Arrays.asList(fieldClass.getFields()), fieldPath);
                 } else {
                     LOGGER.error("[Storage] The field " + fieldClass.getSimpleName() + " is not static or public, can not convert to config!");
                 }
             } else {
                 try  {
-                    Object value = field.get(this);
+                    Object value = field.get(clazz.newInstance());
                     this.set(fieldPath, value);
-                } catch (IllegalArgumentException | IllegalAccessException ex) {
-                    LOGGER.error("[Storage] Error invoking " + field, ex);
+                } catch (IllegalArgumentException | IllegalAccessException | InstantiationException ex) {
+                    LOGGER.error("[Storage] Error invoking " + field.getName() + " with parent key " + path, ex);
                 }
             }
         }
@@ -153,9 +174,7 @@ public class ClassBasedYamlStorage extends YamlStorage {
      *
      * @return {@link List}
      */
-    public List<Field> getConfigFields() {
-        throw new UnsupportedOperationException("This is not supported in class based configs!");
-    }
+    public abstract List<Field> getConfigFields();
 
     /**
      * The header for this configuration file
@@ -167,8 +186,7 @@ public class ClassBasedYamlStorage extends YamlStorage {
     }
 
     private String toNode(Field field) {
-        Class<?> type = field.getType();
-        return type.getSimpleName().replaceAll("_", "-");
+        return field.getName().replaceAll("_", "-").toUpperCase();
     }
 
 //    private String toFieldName(String name) {
