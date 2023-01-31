@@ -84,23 +84,27 @@ public abstract class ClassBasedYamlStorage extends YamlStorage {
             // It's a custom object class, not a simple field then
             if (field.isAnnotationPresent(Create.class)) {
                 Class<?> fieldClass = field.getType();
-                int modifiers = fieldClass.getModifiers();
-                if (Modifier.isStatic(modifiers) && Modifier.isPublic(modifiers)) {
+                int modifiers = field.getModifiers();
+                if (Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers)) {
                     try {
-                        field.set(clazz == this.getClass() ? this : clazz.newInstance(), fieldClass.newInstance());
+                        Object classInstance = clazz == this.getClass() ? this : clazz.newInstance();
+                        if (field.get(classInstance) == null) {
+                            field.set(classInstance, fieldClass.newInstance());
+                        }
                     } catch (IllegalArgumentException | IllegalAccessException | InstantiationException ex) {
                         LOGGER.error("[Storage] Error invoking " + field + " with parent key " + parentPath, ex);
                         continue;
                     }
                     this.readValueForField(fieldClass, Arrays.asList(fieldClass.getFields()), path);
                 } else {
-                    LOGGER.error("[Storage] The field " + fieldClass.getSimpleName() + " is not static or public, can not convert to config!");
+                    LOGGER.error("[Storage] The field " + field.getName() + " is not static or public, can not convert to config!");
                 }
             } else {
                 try {
-                    Object value;
+                    // Get the default value from the field
+                    Object instance = clazz.newInstance();
                     if (!this.contains(path)) {
-                        value = field.get(clazz.newInstance());
+                        Object value = field.get(instance);
                         this.set(path, value);
 
                         if (field.isAnnotationPresent(Comment.class)) {
@@ -109,9 +113,10 @@ public abstract class ClassBasedYamlStorage extends YamlStorage {
                                 this.addComment(path, string);
                             }
                         }
+                    // Read the config and set the field's value
                     } else {
-                        value = this.get(path);
-                        field.set(clazz.newInstance(), value);
+                        Object value = this.get(path);
+                        field.set(instance, value);
                     }
                 } catch (IllegalArgumentException | IllegalAccessException | InstantiationException ex) {
                     LOGGER.error("[Storage] Error invoking " + field.getName() + " with parent key " + parentPath, ex);
@@ -145,21 +150,25 @@ public abstract class ClassBasedYamlStorage extends YamlStorage {
             // It's a custom object class, not a simple field then
             if (field.isAnnotationPresent(Create.class)) {
                 Class<?> fieldClass = field.getType();
-                int modifiers = fieldClass.getModifiers();
-                if (Modifier.isStatic(modifiers) && Modifier.isPublic(modifiers)) {
+                int modifiers = field.getModifiers();
+                if (Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers)) {
                     try {
-                        field.set(clazz == this.getClass() ? this : clazz.newInstance(), fieldClass.newInstance());
+                        Object classInstance = clazz == this.getClass() ? this : clazz.newInstance();
+                        if (field.get(classInstance) == null) {
+                            field.set(classInstance, fieldClass.newInstance());
+                        }
                     } catch (IllegalArgumentException | IllegalAccessException | InstantiationException ex) {
                         LOGGER.error("[Storage] Error invoking " + field + " with parent key " + path, ex);
                         continue;
                     }
                     this.readFieldClass(fieldClass, Arrays.asList(fieldClass.getFields()), fieldPath);
                 } else {
-                    LOGGER.error("[Storage] The field " + fieldClass.getSimpleName() + " is not static or public, can not convert to config!");
+                    LOGGER.error("[Storage] The field " + field.getName() + " is not static or public, can not convert to config!");
                 }
             } else {
                 try  {
-                    Object value = field.get(clazz.newInstance());
+                    Object instance = clazz.newInstance();
+                    Object value = field.get(instance);
                     this.set(fieldPath, value);
                 } catch (IllegalArgumentException | IllegalAccessException | InstantiationException ex) {
                     LOGGER.error("[Storage] Error invoking " + field.getName() + " with parent key " + path, ex);
