@@ -32,10 +32,10 @@ public abstract class YamlStorage {
 
     private static final Logger LOGGER = LogManager.getLogger(YamlStorage.class);
 
-    /*========================================================================*/
+    // Cache the fields to optimize reflection usage
+    private final List<Field> fields;
     private final String name;
     private final YamlFile config;
-    /*========================================================================*/
 
     /**
      * Initiation method for a config file
@@ -76,6 +76,12 @@ public abstract class YamlStorage {
             LOGGER.error("[Storage] Error: " + ex.getMessage());
         }
 
+        // Call this method for ParentYamlStorage to register child fields
+        // before loading the config...
+        this.registerChildStorages();
+
+        this.fields = this.getConfigFields();
+
         this.config.options().header(String.join("\n", this.getHeader()));
         this.readConfig();
     }
@@ -85,7 +91,7 @@ public abstract class YamlStorage {
      * we save the default value of the {@link ConfigValue} to the config
      */
     public void readConfig() {
-        for ( Field field : this.getConfigFields() ) {
+        for ( Field field : this.fields ) {
             try {
                 ConfigValue configValue = field.getAnnotation(ConfigValue.class);
                 Object value = field.get(null);
@@ -118,7 +124,7 @@ public abstract class YamlStorage {
     public void writeConfig() {
         this.clearConfig();
 
-        for ( Field field : this.getConfigFields()) {
+        for ( Field field : this.fields) {
             ConfigValue configValue = field.getAnnotation(ConfigValue.class);
             try {
                 Object value = field.get(this);
@@ -232,5 +238,9 @@ public abstract class YamlStorage {
 
     public YamlConfiguration getConfiguration() {
         return this.config;
+    }
+
+    public void registerChildStorages() {
+
     }
 }
