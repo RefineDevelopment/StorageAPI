@@ -15,7 +15,7 @@
 
     <groupId>xyz.refinedev.api</groupId>
     <artifactId>StorageAPI</artifactId>
-    <version>1.5</version>
+    <version>1.6</version>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -122,6 +122,13 @@
             <groupId>me.carleslc.Simple-YAML</groupId>
             <artifactId>Simple-Yaml</artifactId>
             <version>1.8.3</version>
+            <scope>compile</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>me.carleslc.Simple-YAML</groupId>
+                    <artifactId>Simple-Configuration</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 
