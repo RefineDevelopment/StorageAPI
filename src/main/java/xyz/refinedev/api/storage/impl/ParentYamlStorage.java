@@ -16,7 +16,7 @@ public abstract class ParentYamlStorage extends YamlStorage {
      * Set based cache for child storages of this Parent Storage
      * We keep it concurrent to allow asynchronous file I/O
      */
-    private Set<ChildYamlStorage> childStorages;
+    private List<ChildYamlStorage> childStorages;
 
     /**
      * Initiation method for a config file
@@ -38,7 +38,7 @@ public abstract class ParentYamlStorage extends YamlStorage {
 
         // Bypass for constructor being called before default variable initialization
         if (childStorages == null) {
-            this.childStorages = Collections.synchronizedSet(new HashSet<>());
+            this.childStorages = new ArrayList<>();
         }
 
         this.childStorages.add(storage);
