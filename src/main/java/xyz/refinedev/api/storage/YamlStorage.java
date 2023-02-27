@@ -97,8 +97,10 @@ public abstract class YamlStorage {
                 Object value = field.get(null);
 
                 // Load the field's value from config
-                if (this.config.contains(configValue.path()) && this.config.get(configValue.path()) != null) {
-                    field.set(this, config.get(configValue.path()));
+                if (this.config.contains(configValue.path())) {
+                    field.setAccessible(true);
+                    field.set(null, config.get(configValue.path()));
+                    field.setAccessible(false);
                 } else {
                     this.config.set(configValue.path(), value); // Add a default value from the field
                 }
@@ -122,12 +124,10 @@ public abstract class YamlStorage {
      * Write our config values to the config
      */
     public void writeConfig() {
-        this.clearConfig();
-
         for ( Field field : this.fields) {
             ConfigValue configValue = field.getAnnotation(ConfigValue.class);
             try {
-                Object value = field.get(this);
+                Object value = field.get(null);
                 config.set(configValue.path(), value);
             } catch (IllegalArgumentException | IllegalAccessException ex) {
                 LOGGER.error("[Storage] Error invoking " + field, ex);
@@ -135,6 +135,17 @@ public abstract class YamlStorage {
         }
 
         this.saveConfig();
+    }
+
+    public void reloadConfig() {
+        try {
+            this.config.load();
+        } catch (IOException ex) {
+            LOGGER.error("[Storage] Could not load " + name + ".yml, please correct your syntax errors!");
+            LOGGER.error("[Storage] Error: " + ex.getMessage());
+        }
+
+        this.readConfig();
     }
 
     /**
