@@ -8,9 +8,14 @@ import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import org.simpleyaml.configuration.ConfigurationSection;
+import org.simpleyaml.configuration.comments.format.PrettyYamlCommentFormatter;
+import org.simpleyaml.configuration.comments.format.YamlCommentFormat;
 import org.simpleyaml.configuration.file.YamlConfiguration;
+import org.simpleyaml.configuration.file.YamlConfigurationOptions;
 import org.simpleyaml.configuration.file.YamlFile;
+import org.simpleyaml.configuration.implementation.api.QuoteStyle;
 
+import org.simpleyaml.configuration.implementation.snakeyaml.lib.comments.CommentType;
 import xyz.refinedev.api.storage.annotations.ConfigValue;
 
 import java.io.File;
@@ -49,7 +54,10 @@ public abstract class YamlStorage {
 
         this.name = name;
         this.config = new YamlFile(file);
-        this.config.options().charset(Charsets.UTF_8);
+
+        // Default options of this Yaml Storage
+        // User can set their own by overriding this method
+        this.setupConfigOptions(this.config.options());
 
         if (!file.exists()) {
             try {
@@ -66,7 +74,6 @@ public abstract class YamlStorage {
 
         try {
             if (saveResource) {
-                this.config.options().useComments(true);
                 this.config.load(file);
             } else {
                 this.config.load();
@@ -108,7 +115,8 @@ public abstract class YamlStorage {
                 // Don't go adding empty comments, they'll just create empty lines
                 // between different keys, making config look awful
                 if (configValue.comment().length() > 0) {
-                    this.config.setComment(configValue.path(), configValue.comment());
+                    this.config.path(configValue.path()).comment(configValue.comment()).blankLine();
+                    //this.config.setComment(configValue.path(), "\n#" + configValue.comment(), YamlCommentFormat.DEFAULT);
                 }
 
             } catch (IllegalArgumentException | IllegalAccessException ex) {
@@ -118,6 +126,22 @@ public abstract class YamlStorage {
 
         this.addSeparateComments();
         this.saveConfig();
+    }
+
+    /**
+     * Reload this config
+     */
+    public void reload() {
+        try {
+            this.config.options().useComments(true);
+            this.config.load();
+        } catch (IOException ex) {
+            LOGGER.error("[Storage] Could not load " + name + ".yml, please correct your syntax errors!");
+            LOGGER.error("[Storage] Error: " + ex.getMessage());
+        }
+
+        this.readConfig();
+        this.writeConfig();
     }
 
     /**
@@ -165,6 +189,20 @@ public abstract class YamlStorage {
     public void clearConfig() {
         this.config.getKeys(false).forEach(key -> config.set(key, null));
         this.saveConfig();
+    }
+
+    /**
+     * Here you can set config options on your own
+     *
+     * @param options {@link YamlConfigurationOptions options}
+     */
+    public void setupConfigOptions(YamlConfigurationOptions options) {
+        this.config.setCommentFormat(YamlCommentFormat.PRETTY);
+
+        options.charset(Charsets.UTF_8);
+        options.useComments(true);
+        options.quoteStyleDefaults().setQuoteStyle(String.class, QuoteStyle.DOUBLE);
+        options.header(String.join("\n", this.getHeader()));
     }
 
     /**
