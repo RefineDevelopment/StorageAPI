@@ -129,22 +129,6 @@ public abstract class YamlStorage {
     }
 
     /**
-     * Reload this config
-     */
-    public void reload() {
-        try {
-            this.config.options().useComments(true);
-            this.config.load();
-        } catch (IOException ex) {
-            LOGGER.error("[Storage] Could not load " + name + ".yml, please correct your syntax errors!");
-            LOGGER.error("[Storage] Error: " + ex.getMessage());
-        }
-
-        this.readConfig();
-        this.writeConfig();
-    }
-
-    /**
      * Write our config values to the config
      */
     public void writeConfig() {
@@ -161,6 +145,9 @@ public abstract class YamlStorage {
         this.saveConfig();
     }
 
+    /**
+     * Reload this config
+     */
     public void reloadConfig() {
         try {
             this.config.load();
