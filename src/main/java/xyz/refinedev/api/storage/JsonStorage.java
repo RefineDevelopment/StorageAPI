@@ -1,6 +1,5 @@
 package xyz.refinedev.api.storage;
 
-import com.google.common.io.Files;
 import com.google.gson.Gson;
 
 import org.apache.logging.log4j.LogManager;
@@ -12,9 +11,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ForkJoinPool;
 
 /**
  * This Project is property of Refine Development © 2021 - 2022
@@ -35,14 +32,18 @@ public class JsonStorage<T> {
     private final Gson gson;
 
     public JsonStorage(String name, JavaPlugin plugin, Gson gson) {
-        String data = plugin.getDataFolder().getAbsolutePath() + File.separator + "data";
-        File dir = new File(data);
-        if (!dir.exists()) {
-            boolean created = dir.mkdir();
-            if (!created) LOGGER.info("[Storage] Couldn't create " + name + "'s storage");
+        this(name, new File(plugin.getDataFolder().getAbsolutePath() + File.separator + "data"), gson);
+    }
+
+    public JsonStorage(String name, File directory, Gson gson) {
+        if (!directory.exists()) {
+            boolean created = directory.mkdir();
+            if (!created) {
+                LOGGER.info("[Storage] Couldn't create " + name + "'s storage");
+            }
         }
 
-        this.file = new File(dir, name + ".json");
+        this.file = new File(directory, name + ".json");
         this.gson = gson;
         this.name = name;
 
