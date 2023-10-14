@@ -55,10 +55,6 @@ public abstract class YamlStorage {
         this.name = name;
         this.config = new YamlFile(file);
 
-        // Default options of this Yaml Storage
-        // User can set their own by overriding this method
-        this.setupConfigOptions(this.config.options());
-
         if (!file.exists()) {
             try {
                 if (saveResource) {
@@ -116,7 +112,6 @@ public abstract class YamlStorage {
                 // between different keys, making config look awful
                 if (configValue.comment().length() > 0) {
                     this.config.path(configValue.path()).comment(configValue.comment()).blankLine();
-                    //this.config.setComment(configValue.path(), "\n#" + configValue.comment(), YamlCommentFormat.DEFAULT);
                 }
 
             } catch (IllegalArgumentException | IllegalAccessException ex) {
@@ -125,6 +120,11 @@ public abstract class YamlStorage {
         }
 
         this.addSeparateComments();
+
+        // Default options of this Yaml Storage
+        // User can set their own by overriding this method
+        this.setupConfigOptions(this.config.options());
+
         this.saveConfig();
     }
 
@@ -189,6 +189,7 @@ public abstract class YamlStorage {
         options.charset(Charsets.UTF_8);
         options.useComments(true);
         options.quoteStyleDefaults().setQuoteStyle(String.class, QuoteStyle.DOUBLE);
+        options.quoteStyleDefaults().setQuoteStyle(List.class, QuoteStyle.DOUBLE);
         options.header(String.join("\n", this.getHeader()));
     }
 
@@ -254,6 +255,10 @@ public abstract class YamlStorage {
 
     public void addComment(String path, String comment) {
         this.config.setComment(path, comment);
+    }
+
+    public void addCommentWithBlankLine(String path, String comment) {
+        this.config.path(path).comment(comment).blankLine();
     }
 
     public Object get(String path) {
