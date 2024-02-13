@@ -90,6 +90,45 @@ public abstract class YamlStorage {
     }
 
     /**
+     * Initiation method for a config file
+     *
+     * @param plugin       {@link JavaPlugin plugin instance}
+     * @param name         {@link String config file name}
+     * @param dataFolder   {@link String data folder}
+     */
+    public YamlStorage(JavaPlugin plugin, String name, String dataFolder) {
+        File file = new File(dataFolder, name + ".yml");
+
+        this.name = name;
+        this.config = new YamlFile(file);
+
+        if (!file.exists()) {
+            try {
+                this.config.createNewFile(false);
+            } catch (IOException ex) {
+                LOGGER.error("[Storage] Could not create/save " + name + ".yml!");
+                LOGGER.error("[Storage] Error: " + ex.getMessage());
+            }
+        }
+
+        try {
+            this.config.load();
+        } catch (IOException ex) {
+            LOGGER.error("[Storage] Could not load " + name + ".yml, please correct your syntax errors!");
+            LOGGER.error("[Storage] Error: " + ex.getMessage());
+        }
+
+        // Call this method for ParentYamlStorage to register child fields
+        // before loading the config...
+        this.registerChildStorages();
+
+        this.fields = this.getConfigFields();
+
+        this.config.options().header(String.join("\n", this.getHeader()));
+        this.readConfig();
+    }
+
+    /**
      * Read config values from the config, if some are not present
      * we save the default value of the {@link ConfigValue} to the config
      */
