@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.plugin.java.JavaPlugin;
+import xyz.refinedev.api.storage.data.PluginData;
 
 import java.io.File;
 import java.io.FileReader;
@@ -32,6 +33,10 @@ public class JsonStorage<T> {
     private final Gson gson;
 
     public JsonStorage(String name, JavaPlugin plugin, Gson gson) {
+        this(name, new File(plugin.getDataFolder().getAbsolutePath() + File.separator + "data"), gson);
+    }
+
+    public JsonStorage(String name, PluginData plugin, Gson gson) {
         this(name, new File(plugin.getDataFolder().getAbsolutePath() + File.separator + "data"), gson);
     }
 

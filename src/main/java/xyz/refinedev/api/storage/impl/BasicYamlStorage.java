@@ -3,6 +3,7 @@ package xyz.refinedev.api.storage.impl;
 import org.bukkit.plugin.java.JavaPlugin;
 import xyz.refinedev.api.storage.YamlStorage;
 import xyz.refinedev.api.storage.annotations.ConfigValue;
+import xyz.refinedev.api.storage.data.PluginData;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
@@ -33,6 +34,17 @@ public class BasicYamlStorage extends YamlStorage {
      */
     public BasicYamlStorage(JavaPlugin plugin, String name, boolean saveResource) {
         super(plugin, name, saveResource);
+    }
+
+    /**
+     * Initiation method for a config file
+     *
+     * @param data         {@link PluginData plugin data}
+     * @param name         {@link String config file name}
+     * @param saveResource {@link Boolean save the resource from plugin}
+     */
+    public BasicYamlStorage(PluginData data, String name, boolean saveResource) {
+        super(data, name, saveResource);
     }
 
     /**

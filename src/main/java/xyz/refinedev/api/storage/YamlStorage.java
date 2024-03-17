@@ -17,6 +17,7 @@ import org.simpleyaml.configuration.implementation.api.QuoteStyle;
 
 import org.simpleyaml.configuration.implementation.snakeyaml.lib.comments.CommentType;
 import xyz.refinedev.api.storage.annotations.ConfigValue;
+import xyz.refinedev.api.storage.data.PluginData;
 
 import java.io.File;
 import java.io.IOException;
@@ -113,6 +114,52 @@ public abstract class YamlStorage {
 
         try {
             this.config.load();
+        } catch (IOException ex) {
+            LOGGER.error("[Storage] Could not load " + name + ".yml, please correct your syntax errors!");
+            LOGGER.error("[Storage] Error: " + ex.getMessage());
+        }
+
+        // Call this method for ParentYamlStorage to register child fields
+        // before loading the config...
+        this.registerChildStorages();
+
+        this.fields = this.getConfigFields();
+
+        this.config.options().header(String.join("\n", this.getHeader()));
+        this.readConfig();
+    }
+
+    /**
+     * Initiation method for a config file
+     *
+     * @param data {@link PluginData} plugin data
+     * @param name {@link String config file name}
+     */
+    public YamlStorage(PluginData data, String name, boolean saveResource) {
+        File file = new File(data.getDataFolder(), name + ".yml");
+
+        this.name = name;
+        this.config = new YamlFile(file);
+
+        if (!file.exists()) {
+            try {
+                if (saveResource) {
+                    data.saveResource(name + ".yml", data.getDataFolder(), false);
+                } else {
+                    this.config.createNewFile(false);
+                }
+            } catch (IOException ex) {
+                LOGGER.error("[Storage] Could not create/save " + name + ".yml!");
+                LOGGER.error("[Storage] Error: " + ex.getMessage());
+            }
+        }
+
+        try {
+            if (saveResource) {
+                this.config.load(file);
+            } else {
+                this.config.load();
+            }
         } catch (IOException ex) {
             LOGGER.error("[Storage] Could not load " + name + ".yml, please correct your syntax errors!");
             LOGGER.error("[Storage] Error: " + ex.getMessage());

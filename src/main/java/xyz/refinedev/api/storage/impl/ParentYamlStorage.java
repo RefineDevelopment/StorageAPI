@@ -6,6 +6,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import xyz.refinedev.api.storage.YamlStorage;
 import xyz.refinedev.api.storage.annotations.ConfigValue;
+import xyz.refinedev.api.storage.data.PluginData;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -25,6 +26,16 @@ public abstract class ParentYamlStorage extends YamlStorage {
      * @param name         {@link String config file name}
      */
     public ParentYamlStorage(JavaPlugin plugin, String name) {
+        super(plugin, name, false);
+    }
+
+    /**
+     * Initiation method for a config file
+     *
+     * @param plugin {@link PluginData plugin instance}
+     * @param name   {@link String config file name}
+     */
+    public ParentYamlStorage(PluginData plugin, String name) {
         super(plugin, name, false);
     }
 
