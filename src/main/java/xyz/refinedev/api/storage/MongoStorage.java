@@ -123,8 +123,11 @@ public class MongoStorage<V> {
             for ( Document document : collection.find() ) {
                 if (document == null) continue;
 
-                document.remove(key);
-                deleteCount++;
+                if (document.get(key) != null) {
+                    document.remove(key);
+                    deleteCount++;
+                }
+                collection.replaceOne(Filters.eq("_id", document.get("_id")), document);
             }
             return deleteCount;
         });
