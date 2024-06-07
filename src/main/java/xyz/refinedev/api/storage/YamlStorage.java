@@ -8,14 +8,12 @@ import org.bukkit.ChatColor;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import org.simpleyaml.configuration.ConfigurationSection;
-import org.simpleyaml.configuration.comments.format.PrettyYamlCommentFormatter;
 import org.simpleyaml.configuration.comments.format.YamlCommentFormat;
 import org.simpleyaml.configuration.file.YamlConfiguration;
 import org.simpleyaml.configuration.file.YamlConfigurationOptions;
 import org.simpleyaml.configuration.file.YamlFile;
 import org.simpleyaml.configuration.implementation.api.QuoteStyle;
 
-import org.simpleyaml.configuration.implementation.snakeyaml.lib.comments.CommentType;
 import xyz.refinedev.api.storage.annotations.ConfigValue;
 import xyz.refinedev.api.storage.data.PluginData;
 
@@ -73,7 +71,7 @@ public abstract class YamlStorage {
             if (saveResource) {
                 this.config.load(file);
             } else {
-                this.config.load();
+                this.config.loadWithComments();
             }
         } catch (IOException ex) {
             LOGGER.error("[Storage] Could not load " + name + ".yml, please correct your syntax errors!");
@@ -113,7 +111,7 @@ public abstract class YamlStorage {
         }
 
         try {
-            this.config.load();
+            this.config.loadWithComments();
         } catch (IOException ex) {
             LOGGER.error("[Storage] Could not load " + name + ".yml, please correct your syntax errors!");
             LOGGER.error("[Storage] Error: " + ex.getMessage());
@@ -158,7 +156,7 @@ public abstract class YamlStorage {
             if (saveResource) {
                 this.config.load(file);
             } else {
-                this.config.load();
+                this.config.loadWithComments();
             }
         } catch (IOException ex) {
             LOGGER.error("[Storage] Could not load " + name + ".yml, please correct your syntax errors!");
@@ -236,7 +234,7 @@ public abstract class YamlStorage {
      */
     public void reloadConfig() {
         try {
-            this.config.load();
+            this.config.loadWithComments();
         } catch (IOException ex) {
             LOGGER.error("[Storage] Could not load " + name + ".yml, please correct your syntax errors!");
             LOGGER.error("[Storage] Error: " + ex.getMessage());
@@ -324,7 +322,7 @@ public abstract class YamlStorage {
 
     public int getInteger(String path, int or) {
         int toReturn = this.getInteger(path);
-        return this.config.contains(path) ? or : toReturn;
+        return this.config.contains(path) ? toReturn : or;
     }
 
     public void set(String path, Object value) {
