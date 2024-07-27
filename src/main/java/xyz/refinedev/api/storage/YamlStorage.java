@@ -14,6 +14,7 @@ import org.simpleyaml.configuration.file.YamlConfigurationOptions;
 import org.simpleyaml.configuration.file.YamlFile;
 import org.simpleyaml.configuration.implementation.api.QuoteStyle;
 
+import org.simpleyaml.configuration.implementation.snakeyaml.SnakeYamlImplementation;
 import xyz.refinedev.api.storage.annotations.ConfigValue;
 import xyz.refinedev.api.storage.data.PluginData;
 
@@ -270,11 +271,13 @@ public abstract class YamlStorage {
     public void setupConfigOptions(YamlConfigurationOptions options) {
         this.config.setCommentFormat(YamlCommentFormat.PRETTY);
 
-        options.charset(Charsets.UTF_8);
+        options.charset(com.google.common.base.Charsets.UTF_8);
         options.useComments(true);
         options.quoteStyleDefaults().setQuoteStyle(String.class, QuoteStyle.DOUBLE);
         options.quoteStyleDefaults().setQuoteStyle(List.class, QuoteStyle.DOUBLE);
-        options.header(String.join("\n", this.getHeader()));
+
+        SnakeYamlImplementation implementation = (SnakeYamlImplementation) options.configuration().getImplementation();
+        implementation.getDumperOptions().setSplitLines(false);
     }
 
     /**
