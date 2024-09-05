@@ -7,6 +7,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.ReplaceOptions;
 
+import com.mongodb.client.model.Updates;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 
@@ -32,10 +33,12 @@ public class MongoStorage<V> {
 
     private final MongoCollection<Document> collection;
     private final Gson gson;
+    private final Type typeToken;
 
     public MongoStorage(MongoCollection<Document> collection, Gson gson) {
         this.collection = collection;
         this.gson = gson;
+        this.typeToken = new TypeToken<V>() {}.getType();
     }
 
     public CompletableFuture<List<V>> fetchAllEntries() {
@@ -45,7 +48,6 @@ public class MongoStorage<V> {
                 if (document == null) {
                     continue;
                 }
-                Type typeToken = new TypeToken<V>() {}.getType();
                 found.add(this.gson.fromJson(document.toJson(), typeToken));
             }
             return found;
@@ -117,19 +119,13 @@ public class MongoStorage<V> {
      * @param key {@link String key}
      * @return    {@link Integer amount of deleted documents}
      */
-    public CompletableFuture<Integer> deleteKeyInAll(String key) {
+    public CompletableFuture<Long> deleteKeyInAll(String key) {
         return CompletableFuture.supplyAsync(() -> {
-            int deleteCount = 0;
-            for ( Document document : collection.find() ) {
-                if (document == null) continue;
+            // Unset the key
+            Bson combinedUpdate = Updates.unset(key);
 
-                if (document.get(key) != null) {
-                    document.remove(key);
-                    deleteCount++;
-                }
-                collection.replaceOne(Filters.eq("_id", document.get("_id")), document);
-            }
-            return deleteCount;
+            // Apply the updates to all documents in the collection
+            return collection.updateMany(new Document(), combinedUpdate).getModifiedCount();  // new Document() is an empty filter, meaning "all documents";
         });
     }
 }
