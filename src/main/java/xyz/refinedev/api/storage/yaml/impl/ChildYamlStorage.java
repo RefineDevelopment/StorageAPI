@@ -1,4 +1,4 @@
-package xyz.refinedev.api.storage.impl;
+package xyz.refinedev.api.storage.yaml.impl;
 
 import java.lang.reflect.Field;
 import java.util.List;

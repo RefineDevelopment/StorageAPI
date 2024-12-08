@@ -1,4 +1,4 @@
-package xyz.refinedev.api.storage;
+package xyz.refinedev.api.storage.mongo;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
