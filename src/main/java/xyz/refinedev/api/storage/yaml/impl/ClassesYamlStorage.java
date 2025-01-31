@@ -174,7 +174,7 @@ public abstract class ClassesYamlStorage extends YamlStorage {
                 }
 
                 // Recursively save nested object fields
-                save(path + prefix + ReflectionUtils.toNodeName(current.getSimpleName()), current, value);
+                save(path + prefix + ReflectionUtils.toNodeName(field.getName()), current, value);
             }
         }
     }
