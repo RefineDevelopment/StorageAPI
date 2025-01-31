@@ -29,7 +29,7 @@ import java.util.List;
  */
 
 @SuppressWarnings("unused")
-public abstract class YamlStorage {
+public class YamlStorage {
 
     private static final Logger LOGGER = LogManager.getLogger(YamlStorage.class);
 
@@ -162,7 +162,7 @@ public abstract class YamlStorage {
      * Comments that are not by config values but added
      * in paths that are separate.
      */
-    public abstract void addSeparateComments();
+    public void addSeparateComments() {}
 
     /**
      * The header for this configuration file
