@@ -32,7 +32,6 @@ public class ReflectionUtils {
             setAccessible(field);
             return field;
         } catch (Exception e) {
-            LOGGER.error("Error (Invalid Field): {}", e.getMessage(), e);
             return null;
         }
     }
@@ -97,7 +96,7 @@ public class ReflectionUtils {
                 LOOKUP_FIELD = MethodHandles.Lookup.class.getDeclaredField("IMPL_LOOKUP"); // This one has trusted access
                 LOOKUP_FIELD.setAccessible(true);
             } catch (Throwable e) {
-                System.out.println("[Carbon] Failed to find trusted lookup field.");
+                System.out.println("Failed to find trusted lookup field.");
                 e.printStackTrace();
             }
         } else {
@@ -105,7 +104,7 @@ public class ReflectionUtils {
                 MODIFIERS_FIELD = Field.class.getDeclaredField("modifiers");
                 MODIFIERS_FIELD.setAccessible(true);
             } catch (Throwable e) {
-                System.out.println("[Carbon] Failed to find modifiers field.");
+                System.out.println("Failed to find modifiers field.");
                 e.printStackTrace();
             }
         }
