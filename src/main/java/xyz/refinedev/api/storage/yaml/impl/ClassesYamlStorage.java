@@ -59,6 +59,16 @@ public abstract class ClassesYamlStorage extends YamlStorage {
         super(name, dataFolder);
     }
 
+    public void reloadConfig() {
+        this.loadConfig();
+
+        // Set initial configuration from the loaded YAML data
+        this.setSectionValue(this.config.getConfigurationSection(this.config.getCurrentPath()), "");
+
+        this.clearConfig();
+        this.saveConfig();
+    }
+
     public void setup() {
         this.setupConfigOptions(this.config.options());
 
