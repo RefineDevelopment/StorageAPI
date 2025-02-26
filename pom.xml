@@ -74,11 +74,11 @@
                     <relocations>
                         <relocation>
                             <pattern>org.simpleyaml</pattern>
-                            <shadedPattern>xyz.refinedev.lib.org.simpleyaml</shadedPattern>
+                            <shadedPattern>xyz.refinedev.libs.org.simpleyaml</shadedPattern>
                         </relocation>
                         <relocation>
                             <pattern>org.yaml.snakeyaml</pattern>
-                            <shadedPattern>xyz.refinedev.lib.org.yaml.snakeyaml</shadedPattern>
+                            <shadedPattern>xyz.refinedev.libs.org.yaml.snakeyaml</shadedPattern>
                         </relocation>
                     </relocations>
                 </configuration>
