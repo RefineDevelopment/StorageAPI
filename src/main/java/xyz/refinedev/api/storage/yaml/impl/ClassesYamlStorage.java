@@ -36,7 +36,7 @@ import java.util.Arrays;
  */
 public abstract class ClassesYamlStorage extends YamlStorage {
 
-    private static final Logger LOGGER = LogManager.getLogger(ClassesYamlStorage.class);
+    protected static final Logger LOGGER = LogManager.getLogger(ClassesYamlStorage.class);
 
     /**
      * Initiation method for a config file
@@ -195,7 +195,7 @@ public abstract class ClassesYamlStorage extends YamlStorage {
      * @param yml     The ConfigurationSection containing key-value pairs.
      * @param oldPath The existing path for nested sections, used to build the full key path.
      */
-    private void setSectionValue(ConfigurationSection yml, String oldPath) {
+    protected void setSectionValue(ConfigurationSection yml, String oldPath) {
         for (String key : yml.getKeys(false)) {
             Object value = yml.get(key);
             String newPath = oldPath + (oldPath.isEmpty() ? "" : ".") + key;
